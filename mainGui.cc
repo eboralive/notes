@@ -40,8 +40,10 @@ void MainGui::SetupMainGui()
 
   SetupButton(&m_button_new , (int) buttonOperation::file_initiate_new);
   SetupButton(&m_button_rename , (int) buttonOperation::file_initiate_rename);
+  SetupButton(&m_button_remove , (int) buttonOperation::file_initiate_remove);
   m_grid_buttons.attach(m_button_new, 0, 0);
   m_grid_buttons.attach(m_button_rename, 1, 0);
+  m_grid_buttons.attach(m_button_remove, 2, 0);
 
   m_fixed.put(m_grid,0,0);
 
@@ -69,7 +71,6 @@ void MainGui::SetupFileChangeGui()
   SetupButton(&m_button_accept , (int) buttonOperation::accept);
   SetupButton(&m_button_cancel , (int) buttonOperation::cancel);
 
-  m_label_file_operation_description.set_text("file name: ");
   m_label_file_operation_description.set_visible(true);
 
   m_fixed_modify_file.put(m_label_file_operation_description, 100,100);
@@ -95,6 +96,9 @@ void MainGui::SetupButton(Gtk::Button* abutton, int button_op)
       break; 
     case buttonOperation::file_initiate_rename :
       abutton->set_label("rename");
+      break; 
+    case buttonOperation::file_initiate_remove :
+      abutton->set_label("remove");
       break; 
     case buttonOperation::accept :
       abutton->set_label("accept");
@@ -123,6 +127,7 @@ Glib::ustring MainGui::GetTextViewText(Gtk::TextView* txtview)
   Glib::ustring da_tex = txtview->get_buffer()->get_text();
   return da_tex;
 }
+
 
 void MainGui::SetupTextview(std::string name, std::string title, std::string msg) {
 
@@ -181,10 +186,12 @@ void MainGui::on_textview_hiding(Gtk::TextView* txtview)
 
 void MainGui::on_button_clicked(Gtk::Button* abutton, int button_op)
 {
+  m_textview_filechange.set_visible(button_op != buttonOperation::file_initiate_remove);
 
   switch(button_op) {
     case  buttonOperation::file_initiate_new :
     
+      m_label_file_operation_description.set_text("new note name: ");
       acceptHandler = &MainGui::NewFileAccept; //  set function pointer to New file handler
 
       m_grid.set_visible(false);
@@ -193,7 +200,17 @@ void MainGui::on_button_clicked(Gtk::Button* abutton, int button_op)
       break; 
     case buttonOperation::file_initiate_rename :
 
+      m_label_file_operation_description.set_text("rename note to: ");
       acceptHandler = &MainGui::RenameFileAccept; // set function pointer to rename file handler
+
+      m_grid.set_visible(false);
+      m_fixed_modify_file.set_visible(true);
+
+      break; 
+    case buttonOperation::file_initiate_remove :
+
+      m_label_file_operation_description.set_text("are you sure you want to remove this note?");
+      acceptHandler = &MainGui::RemoveFileAccept; // set function pointer to rename file handler
 
       m_grid.set_visible(false);
       m_fixed_modify_file.set_visible(true);
@@ -220,23 +237,26 @@ void MainGui::on_button_clicked(Gtk::Button* abutton, int button_op)
 void MainGui::NewFileAccept()
 {
 
-      std::string new_file_name;
-      new_file_name = GetTextViewText(&m_textview_filechange);
+  std::string new_file_name;
+  new_file_name = GetTextViewText(&m_textview_filechange);
 
-      if (new_file_name.length() > 0) 
-      {
-        new_file_name = CheckFileName(new_file_name);
-        fops.SaveFile(new_file_name, "");
-        SetupTextview(new_file_name, new_file_name, "" );
-      }
+  if (new_file_name.length() > 0) 
+  {
+    new_file_name = CheckFileName(new_file_name);
+    fops.SaveFile(new_file_name, "");
+    SetupTextview(new_file_name, new_file_name, "" );
+  }
 
-      m_fixed_modify_file.set_visible(false);
-      m_grid.set_visible(true);
+  SetTextViewText(&m_textview_filechange, "");
+
+  m_fixed_modify_file.set_visible(false);
+  m_grid.set_visible(true);
 
 }
 
 void MainGui::RenameFileAccept()
 {
+
   Gtk::TextView* txtview;
   std::string new_file_name, current_file_name;
 
@@ -258,6 +278,8 @@ void MainGui::RenameFileAccept()
 
   }
 
+  SetTextViewText(&m_textview_filechange, "");
+
   m_fixed_modify_file.set_visible(false);
   m_grid.set_visible(true);
 
@@ -270,3 +292,21 @@ void MainGui::RenameFileAccept()
     return input_str;
   }
 
+
+void MainGui::RemoveFileAccept()
+{
+  
+  Gtk::TextView* txtview;
+  std::string current_file_name;
+
+  txtview = (Gtk::TextView*) m_stack0.get_visible_child();
+  current_file_name = m_textboxes[txtview];
+
+  fops.RemoveFile(current_file_name);
+  m_stack0.remove(*txtview);
+  m_textboxes.erase(txtview);
+
+  m_fixed_modify_file.set_visible(false);
+  m_grid.set_visible(true);
+
+}

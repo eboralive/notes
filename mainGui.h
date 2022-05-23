@@ -35,16 +35,14 @@ protected:
 
   void SetupMainGui();
   void SetupButton(Gtk::Button*, int);
-  void SetTextViewText(Gtk::TextView*, std::string);
   void SetupTextview(std::string name, std::string title, std::string message);
   void SetupFileChangeGui();
   void NewFileAccept();
   void RenameFileAccept();
+  void RemoveFileAccept();
   std::string CheckFileName(std::string);
-
   void (MainGui::*acceptHandler)();
-
-
+  void SetTextViewText(Gtk::TextView*, std::string);
   Glib::ustring GetTextViewText(Gtk::TextView* );
 
   
@@ -57,6 +55,7 @@ protected:
   Gtk::Grid m_grid_buttons;
   Gtk::Button m_button_new;
   Gtk::Button m_button_rename;
+  Gtk::Button m_button_remove;
   Gtk::Stack m_stack0;
   Gtk::StackSidebar m_stack_sidebar;
 
@@ -70,7 +69,7 @@ protected:
   std::map<Gtk::TextView*, std::string> m_textboxes;
   std::string current_text, previous_text;
 
-  enum buttonOperation { file_initiate_new, file_initiate_rename, accept, cancel };
+  enum buttonOperation { file_initiate_new, file_initiate_rename, file_initiate_remove, accept, cancel };
   
 };
 

@@ -61,3 +61,9 @@ void fileOperations::RenameFile(std::string fileName, std::string newFileName)
 {
     std::rename((GetNoteFilesDir() + "/" + fileName).c_str(), (GetNoteFilesDir() + "/" + newFileName).c_str());
 }
+
+void fileOperations::RemoveFile(std::string fileName)
+{
+    const int result = std::remove((GetNoteFilesDir() + "/" + fileName).c_str());
+}
+

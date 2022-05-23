@@ -21,6 +21,7 @@ public:
   std::string ReadFile(std::filesystem::path path);
   std::string GetNoteFilesDir();
   void RenameFile(std::string fileName, std::string newFileName);
+  void RemoveFile(std::string fileName);
 
 protected:
   
