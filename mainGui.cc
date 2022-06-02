@@ -24,7 +24,7 @@ void MainGui::SetupMainGui()
   this->add(m_fixed);
   this->set_title("notes");
   
-  m_stack_sidebar.set_stack(m_stack0);
+  m_stack_sidebar.set_stack(m_stack);
   m_stack_sidebar.set_visible();
   m_stack_sidebar.set_vexpand(true);
   m_stack_sidebar.set_size_request(150,150); // minimum size quested width, height
@@ -36,7 +36,9 @@ void MainGui::SetupMainGui()
         SetupTextview(itr->first, itr->first, itr->second);
   }
 
-  m_stack0.set_hexpand(true);
+  m_stack.set_hexpand(true);
+  m_scrolled_window.add(m_stack);
+  //m_scrolled_window.set_policy(Gtk::PolicyType::AUTOMATIC, Gtk::PolicyType::AUTOMATIC);
 
   SetupButton(&m_button_new , (int) buttonOperation::file_initiate_new);
   SetupButton(&m_button_rename , (int) buttonOperation::file_initiate_rename);
@@ -51,10 +53,11 @@ void MainGui::SetupMainGui()
   m_grid.set_size_request(800,600);
  
   m_grid.attach(m_stack_sidebar, 0, 0);
-  m_grid.attach(m_stack0,1,0);
+  m_grid.attach(m_scrolled_window,1,0);
   m_grid.attach( m_grid_buttons, 1,1);  
 
-  m_stack0.show();
+  m_stack.show();
+  m_scrolled_window.show();
   m_fixed.show();
   m_grid_buttons.show();
   m_grid.show();  
@@ -131,7 +134,7 @@ Glib::ustring MainGui::GetTextViewText(Gtk::TextView* txtview)
 
 void MainGui::SetupTextview(std::string name, std::string title, std::string msg) {
 
-  Gtk::TextView* txtview = new  Gtk::TextView();
+  Gtk::TextView* txtview = new Gtk::TextView();
 
   txtview->set_editable(true);
   txtview->set_accepts_tab(true);
@@ -153,8 +156,8 @@ void MainGui::SetupTextview(std::string name, std::string title, std::string msg
             return false; //to propagate the event further
         }, false); //run before other handlers (from txtview)
 */
-
-  m_stack0.add(*txtview, name, title); 
+ 
+  m_stack.add(*txtview, name, title); 
 
   m_textboxes[txtview] = name;
 
@@ -262,7 +265,7 @@ void MainGui::RenameFileAccept()
 
   new_file_name = GetTextViewText(&m_textview_filechange);
 
-  txtview = (Gtk::TextView*) m_stack0.get_visible_child();
+  txtview = (Gtk::TextView*) m_stack.get_visible_child();
   current_file_name = m_textboxes[txtview];
 
   if (new_file_name.length() > 0) 
@@ -270,8 +273,8 @@ void MainGui::RenameFileAccept()
     new_file_name = CheckFileName(new_file_name);
     fops.RenameFile(current_file_name, new_file_name);
    
-    m_stack0.remove(*txtview);
-    m_stack0.add(*txtview, new_file_name, new_file_name); 
+    m_stack.remove(*txtview);
+    m_stack.add(*txtview, new_file_name, new_file_name); 
 
     m_textboxes.erase(txtview);
     m_textboxes[txtview] = new_file_name;
@@ -299,13 +302,14 @@ void MainGui::RemoveFileAccept()
   Gtk::TextView* txtview;
   std::string current_file_name;
 
-  txtview = (Gtk::TextView*) m_stack0.get_visible_child();
+  txtview = (Gtk::TextView*) m_stack.get_visible_child();
   current_file_name = m_textboxes[txtview];
 
   fops.RemoveFile(current_file_name);
-  m_stack0.remove(*txtview);
+  m_stack.remove(*txtview);
   m_textboxes.erase(txtview);
-
+  delete txtview;
+  
   m_fixed_modify_file.set_visible(false);
   m_grid.set_visible(true);
 

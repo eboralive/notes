@@ -19,6 +19,7 @@
 #include <map>
 #include <gtkmm/dialog.h>
 #include <gtkmm/box.h>
+#include <gtkmm/scrolledwindow.h>
 
 class MainGui : public Gtk::Window
 {
@@ -56,8 +57,9 @@ protected:
   Gtk::Button m_button_new;
   Gtk::Button m_button_rename;
   Gtk::Button m_button_remove;
-  Gtk::Stack m_stack0;
+  Gtk::Stack m_stack;
   Gtk::StackSidebar m_stack_sidebar;
+  Gtk::ScrolledWindow m_scrolled_window;
 
   Gtk::Label m_label_file_operation_description;
   Gtk::TextView m_textview_filechange;
